@@ -268,6 +268,7 @@ Available apps:
 - terminal
 - tictactoe
 - cursor
+- calculator
 - about`;
       break;
 
@@ -614,3 +615,4 @@ window.addEventListener('load', () => {
 // Taskbar button
 
 $('btnCursorEditor')?.addEventListener('click', () => toggleWindow('cursorEditorWindow'));
+
