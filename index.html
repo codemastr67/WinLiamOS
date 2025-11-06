@@ -187,11 +187,11 @@ button.btn{padding:8px 10px;border-radius:6px;border:none;background:#2563eb;col
 </div>
 
 <!--Calculator-->
-<div class="window" id="calculatorWindow" style="display:none;">
-  <div class="titlebar">
-    <span>🧮 Calculator</span>
+<div id="calculatorWindow" class="window" style="left:220px;top:220px;z-index:200;">
+  <div class="titlebar" data-win="calculatorWindow">
+    <div class="left"><div class="title">Calculator</div></div>
     <div class="controls">
-      <button class="control close">✖</button>
+      <div class="control close" data-action="close" data-win="calculatorWindow"></div>
     </div>
   </div>
   <div class="content" style="flex-direction:column;gap:8px;align-items:center;justify-content:center;">
@@ -200,7 +200,6 @@ button.btn{padding:8px 10px;border-radius:6px;border:none;background:#2563eb;col
     <div id="calcButtons" style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;width:90%;"></div>
   </div>
 </div>
-
 
 <div class="taskbar">
   <div class="icon" title="Start" id="btnStart">🏠</div>
