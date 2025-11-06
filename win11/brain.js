@@ -612,4 +612,5 @@ window.addEventListener('load', () => {
 });
 
 // Taskbar button
+
 $('btnCursorEditor')?.addEventListener('click', () => toggleWindow('cursorEditorWindow'));
