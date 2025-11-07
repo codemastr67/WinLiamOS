@@ -688,12 +688,22 @@ window.addEventListener('load', () => {
 
 // Taskbar button
 $('btnCursorEditor')?.addEventListener('click', () => toggleWindow('cursorEditorWindow'));
-// ---------- taskbar buttons wiring ----------
-$('btnStart').addEventListener('click', ()=> toggleWindow('startWindow'));
-$('btnBrowser').addEventListener('click', ()=> toggleWindow('browserWindow'));
-$('btnBg').addEventListener('click', ()=> toggleWindow('bgEditorWindow'));
-$('btnNotepad').addEventListener('click', ()=> toggleWindow('notepadWindow'));
-$('btnTerminal').addEventListener('click', ()=> toggleWindow('terminalWindow'));
-$('btnAbout').addEventListener('click', ()=> toggleWindow('aboutWindow'));
+// ---------- taskbar buttons wiring (complete + safe) ----------
+const taskbarMap = {
+  btnStart: 'startWindow',
+  btnBrowser: 'browserWindow',
+  btnBg: 'bgEditorWindow',
+  btnNotepad: 'notepadWindow',
+  btnTerminal: 'terminalWindow',
+  btnAbout: 'aboutWindow',
+  btnTicTacToe: 'ticTacToeWindow',
+  btnCursorEditor: 'cursorEditorWindow',
+  btnCalculator: 'calculatorWindow'
+};
+
+for (const [btnId, winId] of Object.entries(taskbarMap)) {
+  const btn = $(btnId);
+  if (btn) btn.addEventListener('click', () => toggleWindow(winId));
+}
 
 
