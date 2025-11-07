@@ -707,9 +707,7 @@ window.addEventListener('load', () => {
   if(savedCursor) document.body.style.cursor = `url(${savedCursor}) 0 0, auto`;
 });
 
-// Taskbar button
-$('btnCursorEditor')?.addEventListener('click', () => toggleWindow('cursorEditorWindow'));
-// ---------- taskbar buttons wiring (complete + safe) ----------
+// ---------- Taskbar Button Wiring ----------
 const taskbarMap = {
   btnStart: 'startWindow',
   btnBrowser: 'browserWindow',
@@ -723,9 +721,8 @@ const taskbarMap = {
 };
 
 for (const [btnId, winId] of Object.entries(taskbarMap)) {
-  const btn = $(btnId);
-  if (btn) btn.addEventListener('click', () => toggleWindow(winId));
+  const btn = document.getElementById(btnId);
+  if (btn) {
+    btn.addEventListener('click', () => toggleWindow(winId));
+  }
 }
-
-
-
