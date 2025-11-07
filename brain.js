@@ -91,8 +91,21 @@ $('browserURL').addEventListener('keypress', e => {
   if (e.key === 'Enter') openURL();
 });
 
-$('bgSet').addEventListener('click', ()=> { const url = $('bgURL').value.trim(); if(url) document.body.style.background = `url('${url}') center/cover no-repeat`; });
-$('bgReset').addEventListener('click', ()=> { document.body.style.background = 'linear-gradient(to bottom right, var(--win-bg-start), var(--win-bg-end))'; });
+$('bgSet').addEventListener('click', ()=> { 
+  const url = $('bgURL').value.trim(); 
+  if (url) {
+    const bgStyle = `url('${url}') center/cover no-repeat`;
+    document.body.style.background = bgStyle;
+    localStorage.setItem('winliam_bg', bgStyle);
+  }
+});
+
+$('bgReset').addEventListener('click', ()=> { 
+  const defaultBg = 'linear-gradient(to bottom right, var(--win-bg-start), var(--win-bg-end))';
+  document.body.style.background = defaultBg;
+  localStorage.removeItem('winliam_bg');
+});
+
 
 // ---------- background presets (from your old file) ----------
 const presetImages = [
@@ -131,6 +144,14 @@ window.addEventListener('load', ()=>{
     bgContent.appendChild(presetContainer);
   }
 });
+
+window.addEventListener('load', () => {
+  const savedBg = localStorage.getItem('winliam_bg');
+  if (savedBg) {
+    document.body.style.background = savedBg;
+  }
+});
+
 
 // ---------- notes + recycle bin ----------
 let notes = JSON.parse(localStorage.getItem('notes')||'{}');
@@ -705,5 +726,6 @@ for (const [btnId, winId] of Object.entries(taskbarMap)) {
   const btn = $(btnId);
   if (btn) btn.addEventListener('click', () => toggleWindow(winId));
 }
+
 
 
