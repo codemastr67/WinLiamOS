@@ -356,9 +356,6 @@ case 'shutdown':
 }
 
 // ---------- CALCULATOR APP ----------
-$('btnCalculator')?.addEventListener('click', () => {
-  showWindow('calculatorWindow');
-});
 
 const display = $('calcDisplay');
 const buttons = $('calcButtons');
@@ -645,7 +642,6 @@ if (resetBtn) resetBtn.onclick = resetTicTacToe;
 if (modeSelect) modeSelect.onchange = resetTicTacToe;
 
 // Taskbar button
-$('btnTicTacToe')?.addEventListener('click', ()=> toggleWindow('ticTacToeWindow'));
 $('resetTicTacToe').addEventListener('click', resetTicTacToe);
 const cursorInput = $('cursorFile');
 const setCursorBtn = $('setCursorBtn');
@@ -726,3 +722,4 @@ for (const [btnId, winId] of Object.entries(taskbarMap)) {
     btn.addEventListener('click', () => toggleWindow(winId));
   }
 }
+
