@@ -524,6 +524,99 @@ window.addEventListener('load', () => {
 // Safety: ensure login window doesn't block UI
 hideWindow('loginWindow');
 
+const SERVER = "https://winliamos-server-nodejs-runtime.up.railway.app";
+
+// refresh friends list
+async function loadFriends() {
+  if (!currentUser) return;
+
+  const res = await fetch(SERVER + "/users");
+  const all = await res.json();
+
+  const me = all[currentUser];
+  const myFriends = me?.friends || [];
+
+  const box = $("friendList");
+  box.innerHTML = "";
+
+  myFriends.forEach(friend => {
+    const btn = document.createElement("button");
+    btn.className = "btn";
+    btn.textContent = friend;
+    btn.onclick = () => openChat(friend);
+    box.appendChild(btn);
+  });
+}
+
+// add friend
+$("addFriendBtn").addEventListener("click", async () => {
+  const friend = $("addFriendInput").value.trim();
+  if (!friend) return;
+
+  const res = await fetch(SERVER + "/addFriend", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username: currentUser, friend })
+  });
+
+  const data = await res.json();
+  $("addFriendMsg").textContent = data.message;
+
+  loadFriends();
+});
+
+let currentChatFriend = null;
+
+// open chat window
+function openChat(friend) {
+  currentChatFriend = friend;
+  $("chatWithLabel").textContent = "Chat with " + friend;
+  showWindow("chatWindow");
+  loadMessages();
+}
+
+// send message
+$("chatSendBtn").addEventListener("click", async () => {
+  const text = $("chatInput").value.trim();
+  if (!text) return;
+
+  await fetch(SERVER + "/sendMessage", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      from: currentUser,
+      to: currentChatFriend,
+      text
+    })
+  });
+
+  $("chatInput").value = "";
+  loadMessages();
+});
+
+// load messages from server
+async function loadMessages() {
+  if (!currentChatFriend) return;
+
+  const res = await fetch(SERVER + "/getMessages", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      user: currentUser,
+      friend: currentChatFriend
+    })
+  });
+
+  const msgs = await res.json();
+  const box = $("chatMessages");
+
+  box.innerHTML = msgs
+    .map(m => `${m.from}: ${m.text}`)
+    .join("\n");
+
+  box.scrollTop = box.scrollHeight;
+}
+
 
 // ---------- Tic Tac Toe (Medium AI) ----------
 const boardEl = document.getElementById("ticTacToeBoard");
@@ -738,7 +831,9 @@ const taskbarMap = {
   btnAbout: 'aboutWindow',
   btnTicTacToe: 'ticTacToeWindow',
   btnCursorEditor: 'cursorEditorWindow',
-  btnCalculator: 'calculatorWindow'
+  btnCalculator: 'calculatorWindow',
+  btnFriends: "friendsWindow",
+  btnChat: "chatWindow"
 };
 
 for (const [btnId, winId] of Object.entries(taskbarMap)) {
@@ -815,6 +910,7 @@ if ('webkitSpeechRecognition' in window) {
 } else {
   console.warn('Voice recognition not supported in this browser.');
 }
+
 
 
 
