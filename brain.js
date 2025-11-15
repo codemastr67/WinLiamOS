@@ -444,25 +444,31 @@ function loginAs(username){
   hideWindow('loginWindow');
 }
 
-$('btnSignUp').addEventListener('click', ()=>{
+// Sign Up
+$('btnSignUp').addEventListener('click', async () => {
   const user = $('loginUser').value.trim();
   const pass = $('loginPass').value;
-  if(!user||!pass){ $('loginMsg').textContent='Enter a username and password.'; return; }
-  if(users[user]){ $('loginMsg').textContent='User already exists.'; return; }
-  // NOTE: this is a simple demo. In a real app, never store plain passwords in localStorage.
-  users[user] = { password: pass };
-  saveUsers();
-  $('loginMsg').textContent='Account created! You can sign in now.';
+  const res = await fetch('http://localhost:3000/signup', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username: user, password: pass })
+  });
+  const data = await res.json();
+  $('loginMsg').textContent = data.message;
 });
 
-$('btnSignIn').addEventListener('click', ()=>{
+// Sign In
+$('btnSignIn').addEventListener('click', async () => {
   const user = $('loginUser').value.trim();
   const pass = $('loginPass').value;
-  if(users[user] && users[user].password === pass){
-    loginAs(user);
-  } else {
-    $('loginMsg').textContent = 'Invalid username or password.';
-  }
+  const res = await fetch('http://localhost:3000/signin', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username: user, password: pass })
+  });
+  const data = await res.json();
+  if (res.ok) loginAs(data.username);
+  else $('loginMsg').textContent = data.message;
 });
 
 $('btnGuest').addEventListener('click', ()=> { loginAs('Guest'); });
@@ -790,4 +796,5 @@ if ('webkitSpeechRecognition' in window) {
 } else {
   console.warn('Voice recognition not supported in this browser.');
 }
+
 
