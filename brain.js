@@ -430,81 +430,100 @@ window.addEventListener('keydown', e => {
 });
 
 
-// ---------- ACCOUNT SYSTEM ----------
-let users = JSON.parse(localStorage.getItem('winliam_users')||'{}');
+// ---------- ACCOUNT SYSTEM (SERVER-BASED) ----------
 let currentUser = localStorage.getItem('winliam_currentUser') || null;
 
-function saveUsers(){ localStorage.setItem('winliam_users', JSON.stringify(users)); }
-function updateUserDisplay(){ $('usernameDisplay').textContent = currentUser ? currentUser : 'Guest'; }
+function updateUserDisplay() {
+  $('usernameDisplay').textContent = currentUser ? currentUser : 'Guest';
+}
 
-function loginAs(username){
+function loginAs(username) {
   currentUser = username;
   localStorage.setItem('winliam_currentUser', username);
   updateUserDisplay();
   hideWindow('loginWindow');
 }
 
-// Sign Up
+const SERVER = "https://winliamos-server-nodejs-runtime.up.railway.app";
+
+// --- SIGN UP ---
 $('btnSignUp').addEventListener('click', async () => {
   const user = $('loginUser').value.trim();
   const pass = $('loginPass').value;
-  const res = await fetch('https://winliamos-server-nodejs-runtime.up.railway.app/', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+
+  if (!user || !pass) {
+    $('loginMsg').textContent = "Enter username + password.";
+    return;
+  }
+
+  const res = await fetch(`${SERVER}/signup`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ username: user, password: pass })
   });
+
   const data = await res.json();
   $('loginMsg').textContent = data.message;
 });
 
-// Sign In
+// --- SIGN IN ---
 $('btnSignIn').addEventListener('click', async () => {
   const user = $('loginUser').value.trim();
   const pass = $('loginPass').value;
-  const res = await fetch('https://winliamos-server-nodejs-runtime.up.railway.app/', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+
+  if (!user || !pass) {
+    $('loginMsg').textContent = "Enter username + password.";
+    return;
+  }
+
+  const res = await fetch(`${SERVER}/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ username: user, password: pass })
   });
+
   const data = await res.json();
-  if (res.ok) loginAs(data.username);
-  else $('loginMsg').textContent = data.message;
+
+  $('loginMsg').textContent = data.message;
+
+  if (data.success) {
+    loginAs(user);
+  }
 });
 
-$('btnGuest').addEventListener('click', ()=> { loginAs('Guest'); });
+// --- GUEST MODE ---
+$('btnGuest').addEventListener('click', () => {
+  loginAs("Guest");
+});
 
-// toggle password visibility
-$('togglePass').addEventListener('click', ()=>{
+// --- PASSWORD TOGGLE ---
+$('togglePass').addEventListener('click', () => {
   const input = $('loginPass');
-  if(input.type === 'password'){ input.type = 'text'; $('togglePass').textContent = '🙈'; }
-  else { input.type = 'password'; $('togglePass').textContent = '👁️'; }
+  input.type = input.type === "password" ? "text" : "password";
+  $('togglePass').textContent = input.type === "password" ? "👁️" : "🙈";
 });
 
-// logout button
-$('btnLogout').addEventListener('click', ()=>{
+// --- LOGOUT ---
+$('btnLogout').addEventListener('click', () => {
   localStorage.removeItem('winliam_currentUser');
   currentUser = null;
   updateUserDisplay();
   showWindow('loginWindow');
 });
 
-// Auto-login logic on load
-window.addEventListener('load', ()=>{
-  if(currentUser){
+// --- AUTO LOGIN ---
+window.addEventListener('load', () => {
+  if (currentUser) {
     updateUserDisplay();
-    // keep login window hidden (non-blocking)
     hideWindow('loginWindow');
   } else {
-    // show the login window on first load
     showWindow('loginWindow');
   }
 });
 
-// Ensure login window close button hides it without blocking the taskbar
-// (already wired through makeWindow -> close button which calls hideWindow)
+// Safety: ensure login window doesn't block UI
+hideWindow('loginWindow');
 
-// small safety: ensure login window doesn't block clicks even if something else manipulates styles
-hideWindow('loginWindow'); // default to hidden (then load handler decides to show if needed)
 
 // ---------- Tic Tac Toe (Medium AI) ----------
 const boardEl = document.getElementById("ticTacToeBoard");
@@ -796,6 +815,7 @@ if ('webkitSpeechRecognition' in window) {
 } else {
   console.warn('Voice recognition not supported in this browser.');
 }
+
 
 
 
