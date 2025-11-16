@@ -60,6 +60,7 @@ function makeWindow(win){
       win.style.width = prevRect.width + 'px'; win.style.height = prevRect.height + 'px';
       isMax = false;
     }
+    if (win.id === "paintWindow") resizePaintCanvas();
   });
 
   const closeBtn = win.querySelector('.control.close');
@@ -991,7 +992,10 @@ $("btnDeleteAccount").addEventListener("click", async () => {
 });
 
 // ---- PAINT APP ----
-$("btnPaint")?.addEventListener("click", () => toggleWindow("paintWindow"));
+$("btnPaint")?.addEventListener("click", () => {
+  toggleWindow("paintWindow");
+  resizePaintCanvas();
+});
 
 const canvas = $("paintCanvas");
 const ctx = canvas.getContext("2d");
@@ -1191,26 +1195,21 @@ document.querySelector("#callWindow .control.close")
   pc = null;
   stopCamera();
 });
+function resizePaintCanvas() {
+  const win = document.getElementById("paintWindow");
+  const canvas = document.getElementById("paintCanvas");
+  const ctx = canvas.getContext("2d");
 
+  // save drawing  
+  const saved = canvas.toDataURL();
 
+  // resize canvas to window content area
+  const content = win.querySelector(".content");
+  canvas.width = content.clientWidth - 10;
+  canvas.height = content.clientHeight - 10;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  // restore drawing  
+  const img = new Image();
+  img.src = saved;
+  img.onload = () => ctx.drawImage(img, 0, 0);
+}
