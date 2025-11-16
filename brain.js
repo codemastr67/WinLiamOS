@@ -894,7 +894,7 @@ if ('webkitSpeechRecognition' in window) {
     const command = event.results[0][0].transcript.toLowerCase().trim();
     $('termOut').textContent += `\nYou said: "${command}"`;
 
-    if (command.includes('open tic tac toe')) {
+    if (command.includes('open tic-tac-toe')) {
       showWindow('ticTacToeWindow');
       $('termOut').textContent += '\nOpened Tic Tac Toe.';
     } 
@@ -924,6 +924,22 @@ if ('webkitSpeechRecognition' in window) {
       else if (command.includes('open facetime')) {
       showWindow('callWindow');
       $('termOut').textContent += '\nOpened facetime.';
+    } 
+        else if (command.includes('open calculator')) {
+      showWindow('calculatorWindow');
+      $('termOut').textContent += '\nOpened calculator.';
+    } 
+          else if (command.includes('open friends')) {
+      showWindow('friendsWindow');
+      $('termOut').textContent += '\nOpened friends.';
+    } 
+            else if (command.includes('open chat')) {
+      showWindow('chatWindow');
+      $('termOut').textContent += '\nOpened calculator.';
+    } 
+              else if (command.includes('open paint')) {
+      showWindow('paintWindow');
+      $('termOut').textContent += '\nOpened paint.';
     } 
     else {
       $('termOut').textContent += '\nUnrecognized voice command.';
@@ -1217,5 +1233,6 @@ function resizePaintCanvas() {
   img.src = saved;
   img.onload = () => ctx.drawImage(img, 0, 0);
 }
+
 
 
