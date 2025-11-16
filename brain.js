@@ -597,6 +597,8 @@ $("chatSendBtn").addEventListener("click", async () => {
 });
 
 // load messages from server
+let lastMessageTimestamps = {}; // stores last message time per friend
+
 async function loadMessages() {
   if (!currentChatFriend) return;
 
@@ -608,6 +610,34 @@ async function loadMessages() {
       friend: currentChatFriend
     })
   });
+
+  const msgs = await res.json();
+  const box = $("chatMessages");
+
+  box.innerHTML = msgs
+    .map(m => `${m.from}: ${m.text}`)
+    .join("\n");
+
+  box.scrollTop = box.scrollHeight;
+
+  // 🔥 NOTIFICATION CHECK
+  if (msgs.length > 0) {
+    const lastMsg = msgs[msgs.length - 1];
+
+    // ignore our own messages
+    if (lastMsg.from !== currentUser) {
+      // if message is new
+      if (!lastMessageTimestamps[currentChatFriend] ||
+          lastMsg.time > lastMessageTimestamps[currentChatFriend]) {
+
+        notify(`📩 New message from ${currentChatFriend}`);
+      }
+
+      lastMessageTimestamps[currentChatFriend] = lastMsg.time;
+    }
+  }
+}
+
 
   const msgs = await res.json();
   const box = $("chatMessages");
@@ -930,6 +960,23 @@ function notify(message, timeout = 4000) {
     setTimeout(() => box.remove(), 300);
   }, timeout);
 }
+setInterval(() => {
+  if (currentUser) loadFriends(); 
+  if (currentChatFriend) loadMessages(); 
+}, 1500);
+function notify(text) {
+  const note = document.createElement("div");
+  note.className = "notification";
+  note.textContent = text;
+
+  document.getElementById("notificationContainer").appendChild(note);
+
+  setTimeout(() => {
+    note.style.opacity = "0";
+    setTimeout(() => note.remove(), 300);
+  }, 3000);
+}
+
 
 
 
