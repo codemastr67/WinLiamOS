@@ -922,7 +922,7 @@ if ('webkitSpeechRecognition' in window) {
       $('termOut').textContent += '\nOpened Background Editor.';
     } 
       else if (command.includes('open facetime')) {
-      showWindow('faceTimeWindow');
+      showWindow('callWindow');
       $('termOut').textContent += '\nOpened facetime.';
     } 
     else {
@@ -1217,4 +1217,5 @@ function resizePaintCanvas() {
   img.src = saved;
   img.onload = () => ctx.drawImage(img, 0, 0);
 }
+
 
