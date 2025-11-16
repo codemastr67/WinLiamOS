@@ -1407,3 +1407,4 @@ async function initBattery() {
 }
 
 initBattery();
+btnCall.addEventListener("click", () => toggleWindow("callWindow"));
