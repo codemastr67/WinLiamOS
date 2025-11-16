@@ -1030,9 +1030,8 @@ $("paintSave").addEventListener("click", () => {
 // ------------- FACETIME / WEBRTC ----------------
 $("btnCall").addEventListener("click", async () => {
   showWindow("callWindow");
-  if (!localStream) await initCamera(); // turns on camera ONLY when window opens
+  await initCamera();
 });
-
 
 let pc;
 let localStream;
@@ -1040,8 +1039,23 @@ let currentCallTarget = null;
 
 // Get user media (camera + mic)
 async function initCamera() {
-  localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+  if (localStream) return localStream;
+
+  localStream = await navigator.mediaDevices.getUserMedia({
+    video: true,
+    audio: true
+  });
+
   $("localVideo").srcObject = localStream;
+  return localStream;
+}
+function stopCamera() {
+  if (localStream) {
+    localStream.getTracks().forEach(t => t.stop());
+    localStream = null;
+  }
+  $("localVideo").srcObject = null;
+  $("remoteVideo").srcObject = null;
 }
 
 // Create peer connection
@@ -1086,27 +1100,59 @@ setInterval(async () => {
 }, 1000);
 
 async function handleSignal(from, data) {
-  // Incoming call offer
+  // incoming call offer
   if (data.offer) {
     currentCallTarget = from;
-    showWindow("callWindow");
-    $("callStatus").textContent = from + " is calling you…";
 
-    createPeer();
-    await pc.setRemoteDescription(data.offer);
+    // show mini popup
+    $("incomingCallText").textContent = `${from} is calling you…`;
+    showWindow("incomingCallWindow");
 
-    const answer = await pc.createAnswer();
-    await pc.setLocalDescription(answer);
+    document.getElementById("ringtone").play();
 
-    sendSignal(from, { answer });
+    // accept
+    $("acceptCall").onclick = async () => {
+      hideWindow("incomingCallWindow");
+      showWindow("callWindow");
+      await initCamera();
+
+      createPeer();
+      await pc.setRemoteDescription(data.offer);
+
+      const answer = await pc.createAnswer();
+      await pc.setLocalDescription(answer);
+
+      sendSignal(from, { answer });
+
+      document.getElementById("ringtone").pause();
+      $("callStatus").textContent = "In call with " + from;
+    };
+
+    // decline
+    $("declineCall").onclick = () => {
+      hideWindow("incomingCallWindow");
+      document.getElementById("ringtone").pause();
+      sendSignal(from, { decline: true });
+    };
+
+    return;
   }
 
-  // Incoming answer
+  // decline
+  if (data.decline) {
+    $("callStatus").textContent = `${from} declined your call.`;
+    stopCamera();
+    return;
+  }
+
+  // answer
   if (data.answer) {
     pc.setRemoteDescription(data.answer);
+    $("callStatus").textContent = "Connected!";
+    return;
   }
 
-  // Incoming ICE candidate
+  // ICE candidate
   if (data.ice) {
     pc.addIceCandidate(data.ice);
   }
@@ -1119,6 +1165,8 @@ $("startCallBtn").addEventListener("click", async () => {
 
   currentCallTarget = user;
 
+  showWindow("callWindow");
+  await initCamera();
   createPeer();
 
   const offer = await pc.createOffer();
@@ -1133,9 +1181,17 @@ $("startCallBtn").addEventListener("click", async () => {
 $("endCallBtn").addEventListener("click", () => {
   if (pc) pc.close();
   pc = null;
-  $("remoteVideo").srcObject = null;
+
+  stopCamera();
   $("callStatus").textContent = "Call ended.";
 });
+document.querySelector("#callWindow .control.close")
+?.addEventListener("click", () => {
+  if (pc) pc.close();
+  pc = null;
+  stopCamera();
+});
+
 
 
 
