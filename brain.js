@@ -977,7 +977,34 @@ function notify(text) {
     note.style.opacity = "0";
     setTimeout(() => note.remove(), 300);
   }, 3000);
-}
+$("btnDeleteAccount").addEventListener("click", async () => {
+  if (!currentUser || currentUser === "Guest") {
+    $("deleteMsg").textContent = "You can't delete the Guest account.";
+    return;
+  }
+
+  if (!confirm("Are you SURE? This permanently deletes your account?")) {
+    return;
+  }
+
+  const res = await fetch(`${SERVER}/deleteAccount`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username: currentUser })
+  });
+
+  const data = await res.json();
+  $("deleteMsg").textContent = data.message;
+
+  if (data.success) {
+    localStorage.removeItem("winliam_currentUser");
+    currentUser = null;
+    updateUserDisplay();
+    showWindow("loginWindow");
+  }
+});
+
+
 
 
 
