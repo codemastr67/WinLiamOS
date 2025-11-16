@@ -347,6 +347,10 @@ case 'shutdown':
   }, 1500);
   break;
 
+      case 'notify':
+  notify(args.join(" ") || "No message provided.");
+  break;
+
     default:
       out.textContent += `\nCommand not found: ${cmd}`;
   }
@@ -908,6 +912,26 @@ if ('webkitSpeechRecognition' in window) {
 } else {
   console.warn('Voice recognition not supported in this browser.');
 }
+//notifications
+function notify(message, timeout = 4000) {
+  const container = $('notificationContainer');
+
+  const box = document.createElement('div');
+  box.className = 'notification';
+  box.innerHTML = `
+    <span>${message}</span>
+    <button onclick="this.parentElement.remove()">✖</button>
+  `;
+
+  container.appendChild(box);
+
+  setTimeout(() => {
+    box.style.opacity = 0;
+    setTimeout(() => box.remove(), 300);
+  }, timeout);
+}
+
+
 
 
 
