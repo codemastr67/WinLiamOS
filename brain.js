@@ -547,6 +547,18 @@ async function loadFriends() {
     btn.onclick = () => openChat(friend);
     box.appendChild(btn);
   });
+  btn.style.position = "relative";
+
+const dot = document.createElement("div");
+dot.style.width = "10px";
+dot.style.height = "10px";
+dot.style.borderRadius = "50%";
+dot.style.position = "absolute";
+dot.style.right = "6px";
+dot.style.top = "6px";
+dot.style.background = all[friend]?.online ? "#0f0" : "#777";
+
+btn.appendChild(dot);
 }
 
 // add friend
@@ -1124,6 +1136,7 @@ $("endCallBtn").addEventListener("click", () => {
   $("remoteVideo").srcObject = null;
   $("callStatus").textContent = "Call ended.";
 });
+
 
 
 
