@@ -1016,7 +1016,7 @@ const taskbarMap = {
   btnCursorEditor: 'cursorEditorWindow',
   btnCalculator: 'calculatorWindow',
   btnFriends: "friendsWindow",
-  btnChat: "chatWindow"
+  btnChat: "chatWindow",
   btnCall: "callWindow"
 };
 
@@ -1409,3 +1409,4 @@ async function initBattery() {
 
 initBattery();
 document.getElementById("btnCall")?.addEventListener("click", () => toggleWindow("callWindow"));
+
