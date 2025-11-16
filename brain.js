@@ -1015,6 +1015,117 @@ $("paintSave").addEventListener("click", () => {
   link.href = canvas.toDataURL();
   link.click();
 });
+// ------------- FACETIME / WEBRTC ----------------
+$("btnCall").addEventListener("click", () => showWindow("callWindow"));
+
+let pc;
+let localStream;
+let currentCallTarget = null;
+
+const SERVER = "https://winliamos-server-nodejs-runtime.up.railway.app";
+
+// Get user media (camera + mic)
+async function initCamera() {
+  localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+  $("localVideo").srcObject = localStream;
+}
+
+initCamera();
+
+// Create peer connection
+function createPeer() {
+  pc = new RTCPeerConnection();
+
+  localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
+
+  pc.ontrack = e => {
+    $("remoteVideo").srcObject = e.streams[0];
+  };
+
+  pc.onicecandidate = e => {
+    if (e.candidate) {
+      sendSignal(currentCallTarget, { ice: e.candidate });
+    }
+  };
+}
+
+// Send signaling data to server
+async function sendSignal(to, data) {
+  await fetch(SERVER + "/signal", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ to, from: currentUser, data })
+  });
+}
+
+// Poll server for incoming signals
+setInterval(async () => {
+  const res = await fetch(SERVER + "/getSignals", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ user: currentUser })
+  });
+
+  const signals = await res.json();
+
+  for (const msg of signals) {
+    handleSignal(msg.from, msg.data);
+  }
+}, 1000);
+
+async function handleSignal(from, data) {
+  // Incoming call offer
+  if (data.offer) {
+    currentCallTarget = from;
+    showWindow("callWindow");
+    $("callStatus").textContent = from + " is calling you…";
+
+    createPeer();
+    await pc.setRemoteDescription(data.offer);
+
+    const answer = await pc.createAnswer();
+    await pc.setLocalDescription(answer);
+
+    sendSignal(from, { answer });
+  }
+
+  // Incoming answer
+  if (data.answer) {
+    pc.setRemoteDescription(data.answer);
+  }
+
+  // Incoming ICE candidate
+  if (data.ice) {
+    pc.addIceCandidate(data.ice);
+  }
+}
+
+// Start call
+$("startCallBtn").addEventListener("click", async () => {
+  const user = $("callUserInput").value.trim();
+  if (!user) return;
+
+  currentCallTarget = user;
+
+  createPeer();
+
+  const offer = await pc.createOffer();
+  await pc.setLocalDescription(offer);
+
+  sendSignal(user, { offer });
+
+  $("callStatus").textContent = "Calling " + user + "...";
+});
+
+// End call
+$("endCallBtn").addEventListener("click", () => {
+  if (pc) pc.close();
+  pc = null;
+  $("remoteVideo").srcObject = null;
+  $("callStatus").textContent = "Call ended.";
+});
+
+
 
 
 
