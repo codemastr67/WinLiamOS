@@ -1,14 +1,17 @@
 const $ = id => document.getElementById(id);
 
 // ---------- window show/hide helpers (safe: won't block clicks when hidden) ----------
-function showWindow(id){
+function showWindow(id) {
   const el = $(id);
   if(!el) return;
-  el.style.display = 'flex';
-  el.style.visibility = 'visible';
-  el.style.pointerEvents = 'auto';
-  // give it a high z-index so it sits above taskbar when open
+  el.style.display = "flex";
+  el.style.visibility = "visible";
+  el.style.pointerEvents = "auto";
   el.style.zIndex = 900;
+
+  if (id === "callWindow") {
+    initCamera();   // <--- start camera whenever shown
+  }
 }
 function hideWindow(id){
   const el = $(id);
@@ -1277,16 +1280,14 @@ setInterval(async () => {
 
 async function handleSignal(from, data) {
 
-  // incoming call offer
+  // Incoming call OFFER
   if (data.offer) {
     currentCallTarget = from;
 
     $("incomingCallText").textContent = `${from} is calling you…`;
     showWindow("incomingCallWindow");
-
     document.getElementById("ringtone").play();
 
-    // accept
     $("acceptCall").onclick = async () => {
       hideWindow("incomingCallWindow");
       showWindow("callWindow");
@@ -1299,12 +1300,11 @@ async function handleSignal(from, data) {
       await pc.setLocalDescription(answer);
 
       sendSignal(from, { answer });
-      document.getElementById("ringtone").pause();
 
+      document.getElementById("ringtone").pause();
       $("callStatus").textContent = "In call with " + from;
     };
 
-    // decline
     $("declineCall").onclick = () => {
       hideWindow("incomingCallWindow");
       document.getElementById("ringtone").pause();
@@ -1314,21 +1314,21 @@ async function handleSignal(from, data) {
     return;
   }
 
-  // decline
+  // DECLINE
   if (data.decline) {
     $("callStatus").textContent = `${from} declined your call.`;
     stopCamera();
     return;
   }
 
-  // answer
+  // ANSWER
   if (data.answer) {
     pc.setRemoteDescription(data.answer);
     $("callStatus").textContent = "Connected!";
     return;
   }
 
-  // ICE candidate
+  // ICE
   if (data.ice) {
     pc.addIceCandidate(data.ice);
   }
@@ -1406,8 +1406,14 @@ async function initBattery() {
   battery.addEventListener("levelchange", updateBattery);
   battery.addEventListener("chargingchange", updateBattery);
 }
-
 initBattery();
 document.getElementById("btnCall")?.addEventListener("click", () => toggleWindow("callWindow"));
-
-
+document.getElementById("btnCall")?.addEventListener("click", async () => {
+  showWindow("callWindow");
+  await initCamera();
+});
+document.querySelector("#callWindow .titlebar").addEventListener("click", async () => {
+  if (getComputedStyle(callWindow).display !== "none") {
+    await initCamera();
+  }
+});
