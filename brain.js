@@ -9,11 +9,6 @@ function showWindow(id) {
   el.style.visibility = "visible";
   el.style.pointerEvents = "auto";
   el.style.zIndex = 900;
-
-  // FaceTime: turn camera on when opened
-  if (id === "callWindow") {
-    initCamera();
-  }
 }
 function hideWindow(id){
   const el = $(id);
@@ -1021,8 +1016,7 @@ const taskbarMap = {
   btnCursorEditor: 'cursorEditorWindow',
   btnCalculator: 'calculatorWindow',
   btnFriends: "friendsWindow",
-  btnChat: "chatWindow",
-  btnCall: "callWindow"
+  btnChat: "chatWindow"
 };
 
 for (const [btnId, winId] of Object.entries(taskbarMap)) {
@@ -1077,10 +1071,6 @@ if ('webkitSpeechRecognition' in window) {
     else if (command.includes('open background')) {
       showWindow('bgEditorWindow');
       $('termOut').textContent += '\nOpened Background Editor.';
-    } 
-      else if (command.includes('open facetime')) {
-      showWindow('callWindow');
-      $('termOut').textContent += '\nOpened facetime.';
     } 
         else if (command.includes('open calculator')) {
       showWindow('calculatorWindow');
@@ -1208,167 +1198,7 @@ $("paintSave").addEventListener("click", () => {
   link.href = canvas.toDataURL();
   link.click();
 });
-// ------------- FACETIME / WEBRTC ----------------
-$("btnCall").addEventListener("click", async () => {
-  showWindow("callWindow");
-  await initCamera();
-});
 
-let pc;
-let localStream;
-let currentCallTarget = null;
-
-// Get user media (camera + mic)
-async function initCamera() {
-  if (localStream) return localStream;
-
-  localStream = await navigator.mediaDevices.getUserMedia({
-    video: true,
-    audio: true
-  });
-
-  $("localVideo").srcObject = localStream;
-  return localStream;
-}
-function stopCamera() {
-  if (localStream) {
-    localStream.getTracks().forEach(t => t.stop());
-    localStream = null;
-  }
-  $("localVideo").srcObject = null;
-  $("remoteVideo").srcObject = null;
-}
-
-// Create peer connection
-function createPeer() {
-  pc = new RTCPeerConnection();
-
-  localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
-
-  pc.ontrack = e => {
-    $("remoteVideo").srcObject = e.streams[0];
-  };
-
-  pc.onicecandidate = e => {
-    if (e.candidate) {
-      sendSignal(currentCallTarget, { ice: e.candidate });
-    }
-  };
-}
-
-// Send signaling data to server
-async function sendSignal(to, data) {
-  await fetch(SERVER + "/signal", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ to, from: currentUser, data })
-  });
-}
-
-// Poll server for incoming signals
-setInterval(async () => {
-  const res = await fetch(SERVER + "/getSignals", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ user: currentUser })
-  });
-
-  const signals = await res.json();
-
-  for (const msg of signals) {
-    handleSignal(msg.from, msg.data);
-  }
-}, 1000);
-
-async function handleSignal(from, data) {
-
-  // Incoming call OFFER
-  if (data.offer) {
-    currentCallTarget = from;
-
-    $("incomingCallText").textContent = `${from} is calling you…`;
-    showWindow("incomingCallWindow");
-    document.getElementById("ringtone").play();
-
-    $("acceptCall").onclick = async () => {
-      hideWindow("incomingCallWindow");
-      showWindow("callWindow");
-      await initCamera();
-
-      createPeer();
-      await pc.setRemoteDescription(data.offer);
-
-      const answer = await pc.createAnswer();
-      await pc.setLocalDescription(answer);
-
-      sendSignal(from, { answer });
-
-      document.getElementById("ringtone").pause();
-      $("callStatus").textContent = "In call with " + from;
-    };
-
-    $("declineCall").onclick = () => {
-      hideWindow("incomingCallWindow");
-      document.getElementById("ringtone").pause();
-      sendSignal(from, { decline: true });
-    };
-
-    return;
-  }
-
-  // DECLINE
-  if (data.decline) {
-    $("callStatus").textContent = `${from} declined your call.`;
-    stopCamera();
-    return;
-  }
-
-  // ANSWER
-  if (data.answer) {
-    pc.setRemoteDescription(data.answer);
-    $("callStatus").textContent = "Connected!";
-    return;
-  }
-
-  // ICE
-  if (data.ice) {
-    pc.addIceCandidate(data.ice);
-  }
-}
-
-// Start call
-$("startCallBtn").addEventListener("click", async () => {
-  const user = $("callUserInput").value.trim();
-  if (!user) return;
-
-  currentCallTarget = user;
-
-  showWindow("callWindow");
-  await initCamera();
-  createPeer();
-
-  const offer = await pc.createOffer();
-  await pc.setLocalDescription(offer);
-
-  sendSignal(user, { offer });
-
-  $("callStatus").textContent = "Calling " + user + "...";
-});
-
-// End call
-$("endCallBtn").addEventListener("click", () => {
-  if (pc) pc.close();
-  pc = null;
-
-  stopCamera();
-  $("callStatus").textContent = "Call ended.";
-});
-document.querySelector("#callWindow .control.close")
-?.addEventListener("click", () => {
-  if (pc) pc.close();
-  pc = null;
-  stopCamera();
-});
 function resizePaintCanvas() {
   const win = document.getElementById("paintWindow");
   const canvas = document.getElementById("paintCanvas");
@@ -1422,3 +1252,4 @@ document.querySelector("#callWindow .titlebar").addEventListener("click", async 
 $("btnCall").addEventListener("click", async () => {
   showWindow("callWindow");
 });
+
