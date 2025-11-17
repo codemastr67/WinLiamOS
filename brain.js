@@ -1016,7 +1016,7 @@ const taskbarMap = {
   btnCursorEditor: 'cursorEditorWindow',
   btnCalculator: 'calculatorWindow',
   btnFriends: "friendsWindow",
-  btnChat: "chatWindow"
+  btnChat: "chatWindow",
   btnPaint: 'paintWindow'
 };
 
@@ -1253,5 +1253,6 @@ document.querySelector("#callWindow .titlebar").addEventListener("click", async 
 $("btnCall").addEventListener("click", async () => {
   showWindow("callWindow");
 });
+
 
 
