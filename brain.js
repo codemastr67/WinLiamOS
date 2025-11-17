@@ -1,26 +1,18 @@
 const $ = id => document.getElementById(id);
 
 // ---------- window show/hide helpers (safe: won't block clicks when hidden) ----------
-function showWindow(id){
-  const el = document.getElementById(id);
-  el.style.display = "flex";
-
-  // FaceTime auto-start camera ONLY when this window opens
-  if (id === "callWindow") {
-    initCamera();
-  }
-}
-
-
+function showWindow(id) {
   const el = $(id);
-  if(!el) return;
+  if (!el) return;
+
   el.style.display = "flex";
   el.style.visibility = "visible";
   el.style.pointerEvents = "auto";
   el.style.zIndex = 900;
 
+  // FaceTime: turn camera on when opened
   if (id === "callWindow") {
-    initCamera();   // <--- start camera whenever shown
+    initCamera();
   }
 }
 function hideWindow(id){
@@ -1427,8 +1419,6 @@ document.querySelector("#callWindow .titlebar").addEventListener("click", async 
     await initCamera();
   }
 });
-document.getElementById("btnCall")?.addEventListener("click", async () => {
+$("btnCall").addEventListener("click", async () => {
   showWindow("callWindow");
-  await initCamera();
 });
-document.getElementById("callWindow").addEventListener("show", initCamera);
