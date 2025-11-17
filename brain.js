@@ -1017,6 +1017,7 @@ const taskbarMap = {
   btnCalculator: 'calculatorWindow',
   btnFriends: "friendsWindow",
   btnChat: "chatWindow"
+  btnPaint: 'paintWindow'
 };
 
 for (const [btnId, winId] of Object.entries(taskbarMap)) {
@@ -1252,4 +1253,5 @@ document.querySelector("#callWindow .titlebar").addEventListener("click", async 
 $("btnCall").addEventListener("click", async () => {
   showWindow("callWindow");
 });
+
 
