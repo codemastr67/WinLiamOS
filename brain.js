@@ -1253,6 +1253,46 @@ document.querySelector("#callWindow .titlebar").addEventListener("click", async 
 $("btnCall").addEventListener("click", async () => {
   showWindow("callWindow");
 });
+let bootCountdown = 3;
+let bootMenuTriggered = false;
 
+// Listen for ESC to open boot menu
+window.addEventListener("keydown", e => {
+  if (e.key === "Escape") {
+    bootMenuTriggered = true;
+    showWindow("bootMenu");
+    document.getElementById("bootScreen").style.display = "none";
+  }
+});
 
+// countdown timer
+const bootInterval = setInterval(() => {
+  if (bootMenuTriggered) {
+    clearInterval(bootInterval);
+    return;
+  }
 
+  bootCountdown--;
+  document.getElementById("bootCountdown").textContent =
+    `Press ESC for Boot Menu… ${bootCountdown}`;
+
+  if (bootCountdown <= 0) {
+    clearInterval(bootInterval);
+    // boot normally
+    document.getElementById("bootScreen").style.display = "none";
+    showWindow("loginWindow"); // your login window
+  }
+}, 1000);
+// Boot Menu buttons
+$("bootNormal").onclick = () => {
+  document.getElementById("bootMenu").style.display = "none";
+  showWindow("loginWindow");
+};
+
+$("bootSafeMode").onclick = () => {
+  alert("Safe Mode activated — looks the same but trust me it's safer 💀");
+};
+
+$("bootReset").onclick = () => {
+  alert("Reset feature coming soon (or tell me exactly what you want it to do).");
+};
