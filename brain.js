@@ -1101,7 +1101,16 @@ document.querySelectorAll("#fileExplorerSidebar .btn").forEach(btn => {
 
 // First load
 loadFolder("root");
+$("fileUpload").addEventListener("change", async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
 
+  const reader = new FileReader();
+  reader.onload = () => {
+    addFile(currentFolder, file.name, reader.result);
+  };
+  reader.readAsDataURL(file); // handles images + files
+});
 // ---------- Taskbar Button Wiring ----------
 const taskbarMap = {
   btnStart: 'startWindow',
@@ -1227,7 +1236,7 @@ setInterval(() => {
     note.style.opacity = "0";
     setTimeout(() => note.remove(), 300);
   }, 3000);
-}  // ← THIS WAS MISSING
+}
   
 
 // DELETE ACCOUNT BUTTON
@@ -1352,5 +1361,6 @@ document.querySelector("#callWindow .titlebar").addEventListener("click", async 
 $("btnCall").addEventListener("click", async () => {
   showWindow("callWindow");
 });
+
 
 
