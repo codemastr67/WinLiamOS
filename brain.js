@@ -517,12 +517,15 @@ $('btnLogout').addEventListener('click', () => {
 });
 // --- AUTO LOGIN ---
 window.addEventListener('load', () => {
+  window.addEventListener("load", () => {
+  // NEVER auto-show login here — boot handles it.
   if (currentUser) {
     updateUserDisplay();
-    hideWindow('loginWindow');
   } else {
-    showWindow('loginWindow');
+    // keep it hidden until boot sequence finishes
+    hideWindow("loginWindow");
   }
+});
 });
 // refresh friends list
 async function loadFriends() {
@@ -1301,5 +1304,6 @@ window.addEventListener("load", () => {
     showWindow("loginWindow");
   };
 });
+
 
 
