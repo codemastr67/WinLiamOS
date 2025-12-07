@@ -1091,34 +1091,42 @@ function loadFolder(folder) {
 
 // open file in notepad or image viewer
 function openFile(folder, name) {
-  const content = fileSystem[folder][name];
-  if (!content) {
-    console.error("File not found in FS:", folder, name);
+  const raw = fileSystem[folder][name];
+  if (!raw) {
+    console.error("Missing file:", folder, name);
     return;
   }
 
   const ext = getExtension(name);
 
-  // --- HTML FILE ---
+  // ---------- HTML VIEW ----------
   if (ext === "html" || ext === "htm") {
-    const base64 = content.includes("base64,")
-      ? content.split("base64,")[1]
-      : btoa(content);
+    let base64;
+
+    if (raw.startsWith("data:text/html")) {
+      base64 = raw.split("base64,")[1];
+    } else {
+      base64 = btoa(raw);
+    }
 
     $("browserFrame").src = "data:text/html;base64," + base64;
     showWindow("browserWindow");
     return;
   }
 
-  // --- TEXT FILE ---
-  const decoded = content.includes("base64,")
-    ? atob(content.split("base64,")[1])
-    : content;
+  // ---------- TEXT FILE VIEW ----------
+  const isBase64 = raw.startsWith("data:");
+
+  const decoded = isBase64
+    ? atob(raw.split("base64,")[1])
+    : raw;
 
   $("textEditorArea").value = decoded;
   $("textEditorFilename").textContent = name;
+  currentTextFile = { folder, name };
   showWindow("textEditorWindow");
 }
+
 
 // Add file
 async function addFile(folder, name, content) {
@@ -1142,7 +1150,11 @@ $("fileUpload").addEventListener("change", async (e) => {
   reader.onload = () => {
     addFile(currentFolder, file.name, reader.result);
   };
-  reader.readAsDataURL(file); // handles images + files
+ if (file.type.startsWith("text")) {
+  reader.readAsText(file);   // real text, not base64
+} else {
+  reader.readAsDataURL(file); // images, binaries
+}
 });
 function openTextFile(path) {
   const content = fileSystem.files[path] || "";
@@ -1419,6 +1431,7 @@ document.querySelector("#callWindow .titlebar").addEventListener("click", async 
 $("btnCall").addEventListener("click", async () => {
   showWindow("callWindow");
 });
+
 
 
 
