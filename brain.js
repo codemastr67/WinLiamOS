@@ -1090,10 +1090,16 @@ function loadFolder(folder) {
 }
 
 // open file in notepad or image viewer
-function openFile(name, content) {
+function openFile(folder, name) {
+  const content = fileSystem[folder][name];
+  if (!content) {
+    console.error("File not found in FS:", folder, name);
+    return;
+  }
+
   const ext = getExtension(name);
 
-  // --- HTML: load in browser as webpage ---
+  // --- HTML FILE ---
   if (ext === "html" || ext === "htm") {
     const base64 = content.includes("base64,")
       ? content.split("base64,")[1]
@@ -1104,7 +1110,7 @@ function openFile(name, content) {
     return;
   }
 
-  // --- TEXT FILES: show raw decoded text ---
+  // --- TEXT FILE ---
   const decoded = content.includes("base64,")
     ? atob(content.split("base64,")[1])
     : content;
@@ -1113,6 +1119,7 @@ function openFile(name, content) {
   $("textEditorFilename").textContent = name;
   showWindow("textEditorWindow");
 }
+
 // Add file
 async function addFile(folder, name, content) {
   fileSystem[folder][name] = content;
@@ -1412,6 +1419,7 @@ document.querySelector("#callWindow .titlebar").addEventListener("click", async 
 $("btnCall").addEventListener("click", async () => {
   showWindow("callWindow");
 });
+
 
 
 
