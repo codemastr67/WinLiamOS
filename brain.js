@@ -96,6 +96,16 @@ function openHTMLInBrowser(htmlContent) {
   frame.style.display = "block";
   frame.srcdoc = htmlContent;
 }
+function openFileInBrowser(path) {
+  const content = fileSystem.files[path];
+  if (!content) return;
+
+  if (path.endsWith(".html")) {
+    openHTMLInBrowser(content);
+  } else {
+    $("browserAddress").value = "file://" + path;
+  }
+}
 $('bgSet').addEventListener('click', ()=> { 
   const url = $('bgURL').value.trim(); 
   if (url) {
@@ -1365,6 +1375,7 @@ document.querySelector("#callWindow .titlebar").addEventListener("click", async 
 $("btnCall").addEventListener("click", async () => {
   showWindow("callWindow");
 });
+
 
 
 
